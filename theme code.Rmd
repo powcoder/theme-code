@@ -1,0 +1,90 @@
+---
+title: "Assignment"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+```{r}
+# load library
+library(ggplot2)
+library(dplyr)
+
+# import data
+data <- read.csv2("http://stulp.gmw.rug.nl/dataviz/ESS.csv", header = TRUE)
+head(data)
+```
+
+```{r, warning = FALSE}
+# create a plot that compares distributions across different countries
+
+# create own theme
+mytheme <- function() {
+  theme(
+    # add border
+    panel.border = element_rect(colour = "black", fill = NA, linetype = 1),
+    # color background
+    panel.background = element_rect(fill = "aliceblue"),
+    # modify grid
+    panel.grid.major.x = element_line(colour = "gray", linetype = 3, size = 0.5),
+    panel.grid.minor.x = element_blank(),
+    panel.grid.major.y =  element_line(colour = "gray", linetype = 3, size = 0.5),
+    panel.grid.minor.y = element_blank(),
+    # modify text, axis and colour
+    axis.text = element_text(colour = "black", face = "bold"),
+    axis.title = element_text(colour = "black", face = "bold"),
+    axis.ticks = element_line(colour = "black"),
+    # modify title
+    plot.title = element_text(hjust = 0.5, size = 12, face = "bold"),
+    # modify facet text
+    strip.text.x = element_text(size = 10, colour = "darkblue", face = "bold"),
+    # remove legend
+    legend.position = "right"
+  )
+}
+
+# chosse ageadlt
+data %>% 
+  ggplot() +
+  aes(ageadlt, col = cntry, fill = cntry) +
+  geom_histogram(bins = 40) +
+  facet_wrap(~ cntry) +
+  ggtitle("The distributions of adult ages across different countries") +
+  xlab("Adult Age") +
+  ylab("Count") +
+  mytheme()
+```
+
+
+```{r, warning=FALSE}
+# calculate median
+med <- data %>%
+  group_by(cntry) %>%
+  summarise(median=median(ageadlt))
+
+med
+# The median is 20 for Austria, Belgium, Netherlands, Norway, Sweden and Swizerland
+
+# The largest median is fr
+med$median[which.max(med$median)]
+med$cntry[which.max(med$median)]
+
+
+
+p1 <- data %>% 
+  ggplot() +
+  aes(ageadlt, col = cntry, fill = cntry) +
+  geom_density(alpha = 0.5) +
+  geom_vline(data = med, aes(xintercept = median, color = cntry), linetype="dashed", size=0.5)+
+  ggtitle("The distributions of adult ages across different countries") +
+  xlab("Adult Age") +
+  ylab("Density") +
+  mytheme()
+
+p1 + annotate(geom="text", x=36, y=0.13, label="The largest median is 25 (Montenegro).", color="red") + 
+  annotate(geom="text", x=28, y=0.2, label="The median of Metherlands is 20.", color="orange")
+```
+
